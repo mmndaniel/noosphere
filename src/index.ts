@@ -96,7 +96,7 @@ app.post('/buffer/:project_id', authMiddleware, (req, res) => {
   }
   const name = project_id.split('/').pop() ?? project_id;
   ensureProject(project_id, name, userId);
-  appendFragment(project_id, fragment);
+  appendFragment(project_id, userId, fragment);
   res.json({ status: 'buffered' });
 });
 
@@ -110,7 +110,7 @@ app.post('/flush/:project_id', authMiddleware, (req, res) => {
     return;
   }
 
-  const fragments = getFragments(project_id);
+  const fragments = getFragments(project_id, userId);
   if (fragments.length === 0) {
     res.json({ status: 'empty' });
     return;
@@ -119,13 +119,14 @@ app.post('/flush/:project_id', authMiddleware, (req, res) => {
   const body = fragments.map(f => f.fragment).join('\n\n');
   const entry_id = createEntry({
     project_id,
+    user_id: userId,
     title: `Buffer flush (${fragments.length} fragments)`,
     source_tool: 'git-hook',
     tags: ['buffer-flush'],
     type: 'session',
     sections: { context: body },
   });
-  clearFragments(project_id);
+  clearFragments(project_id, userId);
   res.json({ status: 'flushed', entry_id });
 });
 
@@ -141,15 +142,16 @@ const IDLE_THRESHOLD_MINUTES = 30;
 if (process.env.NOOSPHERE_AUTO_PUSH === 'true') {
   setInterval(() => {
     const stale = getStaleProjects(IDLE_THRESHOLD_MINUTES);
-    for (const { projectId, idleMinutes } of stale) {
+    for (const { projectId, userId, idleMinutes } of stale) {
       // Only create marker if the most recent entry is older than the activity window
-      const recent = getRecentEntries(projectId, 1);
+      const recent = getRecentEntries(projectId, 1, userId);
       const lastEntryTime = recent.length > 0 ? new Date(recent[0].timestamp).getTime() : 0;
       const activityWindowStart = Date.now() - (idleMinutes + IDLE_THRESHOLD_MINUTES) * 60 * 1000;
 
       if (lastEntryTime < activityWindowStart) {
         createEntry({
           project_id: projectId,
+          user_id: userId,
           title: 'Session ended without explicit push',
           source_tool: 'auto-push',
           tags: ['auto-push', 'safety-net'],
@@ -159,7 +161,7 @@ if (process.env.NOOSPHERE_AUTO_PUSH === 'true') {
           },
         });
       }
-      clearActivity(projectId);
+      clearActivity(projectId, userId);
     }
   }, IDLE_CHECK_INTERVAL);
   console.log('Auto-push safety net enabled (NOOSPHERE_AUTO_PUSH=true)');

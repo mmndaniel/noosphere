@@ -30,6 +30,7 @@ function generateEntryId(): string {
 
 export function createEntry(params: {
   project_id: string;
+  user_id: string;
   title: string;
   source_tool?: string;
   tags?: string[];
@@ -43,11 +44,12 @@ export function createEntry(params: {
   const content = sectionsToMarkdown(params.sections);
 
   db.prepare(`
-    INSERT INTO entries (entry_id, project_id, title, source_tool, timestamp, tags, type, content)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO entries (entry_id, project_id, user_id, title, source_tool, timestamp, tags, type, content)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     entry_id,
     params.project_id,
+    params.user_id,
     params.title,
     params.source_tool ?? 'unknown',
     timestamp,
@@ -62,9 +64,8 @@ export function createEntry(params: {
 export function getEntry(entryId: string, userId: string): Entry | null {
   const db = getDb();
   const row = db.prepare(`
-    SELECT e.* FROM entries e
-    JOIN projects p ON p.project_id = e.project_id
-    WHERE e.entry_id = ? AND p.user_id = ?
+    SELECT * FROM entries
+    WHERE entry_id = ? AND user_id = ?
   `).get(entryId, userId) as (Omit<Entry, 'tags'> & { tags: string }) | undefined;
 
   if (!row) return null;
@@ -102,32 +103,24 @@ function sectionsToMarkdown(sections: Record<string, string>): string {
     .join('\n\n');
 }
 
-export function getRecentEntries(projectId: string, limit = 5, userId?: string): Entry[] {
+export function getRecentEntries(projectId: string, limit: number, userId: string): Entry[] {
   const db = getDb();
 
-  // When userId provided, verify ownership; otherwise trust internal caller
-  const query = userId
-    ? `SELECT e.* FROM entries e
-       JOIN projects p ON p.project_id = e.project_id
-       WHERE e.project_id = ? AND p.user_id = ?
-       ORDER BY CASE WHEN e.type = 'foundational' THEN 0 ELSE 1 END ASC, e.timestamp DESC
-       LIMIT ?`
-    : `SELECT * FROM entries
-       WHERE project_id = ?
-       ORDER BY CASE WHEN type = 'foundational' THEN 0 ELSE 1 END ASC, timestamp DESC
-       LIMIT ?`;
-
-  const params = userId ? [projectId, userId, limit] : [projectId, limit];
-  const rows = db.prepare(query).all(...params) as (Omit<Entry, 'tags'> & { tags: string })[];
+  const rows = db.prepare(`
+    SELECT * FROM entries
+    WHERE project_id = ? AND user_id = ?
+    ORDER BY CASE WHEN type = 'foundational' THEN 0 ELSE 1 END ASC, timestamp DESC
+    LIMIT ?
+  `).all(projectId, userId, limit) as (Omit<Entry, 'tags'> & { tags: string })[];
 
   return rows.map(row => ({ ...row, tags: JSON.parse(row.tags) }));
 }
 
-export function getEntryCount(projectId: string): number {
+export function getEntryCount(projectId: string, userId: string): number {
   const db = getDb();
   const row = db.prepare(
-    'SELECT COUNT(*) AS count FROM entries WHERE project_id = ?'
-  ).get(projectId) as { count: number };
+    'SELECT COUNT(*) AS count FROM entries WHERE project_id = ? AND user_id = ?'
+  ).get(projectId, userId) as { count: number };
   return row.count;
 }
 
@@ -149,10 +142,9 @@ export function searchEntries(projectId: string, keywords: string[], userId: str
       e.tags
     FROM entries_fts
     JOIN entries e ON e.rowid = entries_fts.rowid
-    JOIN projects p ON p.project_id = e.project_id
     WHERE entries_fts MATCH ?
       AND e.project_id = ?
-      AND p.user_id = ?
+      AND e.user_id = ?
     ORDER BY rank
     LIMIT 20
   `).all(ftsQuery, projectId, userId) as {

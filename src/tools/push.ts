@@ -40,6 +40,7 @@ export function push(input: PushInput, userId: string): object {
   if (input.title && input.sections) {
     const entry_id = createEntry({
       project_id: input.project_id,
+      user_id: userId,
       title: input.title,
       source_tool: input.source_tool,
       tags: input.tags,
@@ -52,7 +53,7 @@ export function push(input: PushInput, userId: string): object {
 
   // Apply state deltas if provided
   if (input.state_deltas && input.state_deltas.length > 0) {
-    applyStateDeltas(input.project_id, input.state_deltas);
+    applyStateDeltas(input.project_id, userId, input.state_deltas);
     result.state_status = 'updated';
   }
 

@@ -32,7 +32,7 @@ export function browse(input: BrowseInput, userId: string): string {
     return `Project "${input.project_id}" not found. Use \`push\` to create it.\n\n${PROTOCOL_COMMENT}`;
   }
 
-  const totalEntries = getEntryCount(input.project_id);
+  const totalEntries = getEntryCount(input.project_id, userId);
   const entries = getRecentEntries(input.project_id, 10, userId);
   const synthesized = synthesizeBrowse(stateMarkdown, entries);
 

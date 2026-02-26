@@ -21,31 +21,31 @@ function rand4(): string {
   return Math.random().toString(36).slice(2, 6).padEnd(4, '0');
 }
 
-export function applyStateDeltas(projectId: string, deltas: StateDelta[]): void {
+export function applyStateDeltas(projectId: string, userId: string, deltas: StateDelta[]): void {
   const db = getDb();
   const now = new Date().toISOString();
 
   const upsertField = db.prepare(`
-    INSERT INTO project_state_fields (project_id, section, key, value, is_list_item, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-    ON CONFLICT(project_id, section, key) DO UPDATE SET
+    INSERT INTO project_state_fields (project_id, user_id, section, key, value, is_list_item, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(project_id, user_id, section, key) DO UPDATE SET
       value = excluded.value,
       is_list_item = excluded.is_list_item,
       updated_at = excluded.updated_at
   `);
 
   const insertListItem = db.prepare(`
-    INSERT INTO project_state_fields (project_id, section, key, value, is_list_item, updated_at)
-    VALUES (?, ?, ?, ?, 1, ?)
+    INSERT INTO project_state_fields (project_id, user_id, section, key, value, is_list_item, updated_at)
+    VALUES (?, ?, ?, ?, ?, 1, ?)
   `);
 
   const applyAll = db.transaction(() => {
     for (const delta of deltas) {
       if (isListAppend(delta)) {
         const key = `${now}_${rand4()}`;
-        insertListItem.run(projectId, delta.section, key, delta.add, now);
+        insertListItem.run(projectId, userId, delta.section, key, delta.add, now);
       } else {
-        upsertField.run(projectId, delta.section, delta.key, delta.value, 0, now);
+        upsertField.run(projectId, userId, delta.section, delta.key, delta.value, 0, now);
       }
     }
   });
@@ -80,8 +80,8 @@ export function reconstructState(projectId: string, userId: string): string {
   if (!project) return '';
 
   const fields = db.prepare(
-    'SELECT section, key, value, is_list_item, updated_at FROM project_state_fields WHERE project_id = ? ORDER BY updated_at ASC'
-  ).all(projectId) as StateField[];
+    'SELECT section, key, value, is_list_item, updated_at FROM project_state_fields WHERE project_id = ? AND user_id = ? ORDER BY updated_at ASC'
+  ).all(projectId, userId) as StateField[];
 
   // Group fields by section
   const sections = new Map<string, StateField[]>();
@@ -161,7 +161,7 @@ export function listAllProjects(userId: string): ProjectSummary[] {
       COUNT(e.entry_id) AS entry_count,
       MAX(e.timestamp) AS last_activity
     FROM projects p
-    LEFT JOIN entries e ON e.project_id = p.project_id
+    LEFT JOIN entries e ON e.project_id = p.project_id AND e.user_id = p.user_id
     WHERE p.user_id = ?
     GROUP BY p.project_id
     ORDER BY COALESCE(MAX(e.timestamp), p.created_at) DESC
@@ -177,9 +177,9 @@ export function listAllProjects(userId: string): ProjectSummary[] {
     // Get Summary field if it exists
     const summaryField = db.prepare(`
       SELECT value FROM project_state_fields
-      WHERE project_id = ? AND section = 'Summary'
+      WHERE project_id = ? AND user_id = ? AND section = 'Summary'
       ORDER BY updated_at DESC LIMIT 1
-    `).get(row.project_id) as { value: string } | undefined;
+    `).get(row.project_id, userId) as { value: string } | undefined;
 
     return {
       project_id: row.project_id,
@@ -196,6 +196,6 @@ export function ensureProject(projectId: string, name: string, userId: string): 
   db.prepare(`
     INSERT INTO projects (project_id, name, user_id)
     VALUES (?, ?, ?)
-    ON CONFLICT(project_id) DO NOTHING
+    ON CONFLICT(project_id, user_id) DO NOTHING
   `).run(projectId, name, userId);
 }
