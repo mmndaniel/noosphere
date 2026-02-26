@@ -8,7 +8,7 @@ export const SearchInputSchema = z.object({
 
 export type SearchInput = z.infer<typeof SearchInputSchema>;
 
-export function search(input: SearchInput): object {
-  const results = searchEntries(input.project_id, input.query);
+export function search(input: SearchInput, userId: string): object {
+  const results = searchEntries(input.project_id, input.query, userId);
   return { results };
 }

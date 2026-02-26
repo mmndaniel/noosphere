@@ -14,9 +14,9 @@ key decision, or end this session, call \`push\` with a summary including
 what you did and what comes next. This enables other tools to pick up
 where you left off. -->`;
 
-export function browse(input: BrowseInput): string {
+export function browse(input: BrowseInput, userId: string): string {
   if (!input.project_id) {
-    const projects = listAllProjects();
+    const projects = listAllProjects(userId);
     if (projects.length === 0) {
       return 'No projects found. Use `push` with a project_id to create your first project.';
     }
@@ -27,13 +27,13 @@ export function browse(input: BrowseInput): string {
     return lines.join('\n\n');
   }
 
-  const stateMarkdown = reconstructState(input.project_id);
+  const stateMarkdown = reconstructState(input.project_id, userId);
   if (!stateMarkdown) {
     return `Project "${input.project_id}" not found. Use \`push\` to create it.\n\n${PROTOCOL_COMMENT}`;
   }
 
   const totalEntries = getEntryCount(input.project_id);
-  const entries = getRecentEntries(input.project_id, 10);
+  const entries = getRecentEntries(input.project_id, 10, userId);
   const synthesized = synthesizeBrowse(stateMarkdown, entries);
 
   const footer = totalEntries > entries.length

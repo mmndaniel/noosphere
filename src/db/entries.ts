@@ -59,11 +59,13 @@ export function createEntry(params: {
   return entry_id;
 }
 
-export function getEntry(entryId: string): Entry | null {
+export function getEntry(entryId: string, userId: string): Entry | null {
   const db = getDb();
-  const row = db.prepare(
-    'SELECT * FROM entries WHERE entry_id = ?'
-  ).get(entryId) as (Omit<Entry, 'tags'> & { tags: string }) | undefined;
+  const row = db.prepare(`
+    SELECT e.* FROM entries e
+    JOIN projects p ON p.project_id = e.project_id
+    WHERE e.entry_id = ? AND p.user_id = ?
+  `).get(entryId, userId) as (Omit<Entry, 'tags'> & { tags: string }) | undefined;
 
   if (!row) return null;
   return { ...row, tags: JSON.parse(row.tags) };
@@ -100,18 +102,23 @@ function sectionsToMarkdown(sections: Record<string, string>): string {
     .join('\n\n');
 }
 
-export function getRecentEntries(projectId: string, limit = 5): Entry[] {
+export function getRecentEntries(projectId: string, limit = 5, userId?: string): Entry[] {
   const db = getDb();
 
-  // Foundational entries first, then most recent session entries, capped at limit
-  const rows = db.prepare(`
-    SELECT * FROM entries
-    WHERE project_id = ?
-    ORDER BY
-      CASE WHEN type = 'foundational' THEN 0 ELSE 1 END ASC,
-      timestamp DESC
-    LIMIT ?
-  `).all(projectId, limit) as (Omit<Entry, 'tags'> & { tags: string })[];
+  // When userId provided, verify ownership; otherwise trust internal caller
+  const query = userId
+    ? `SELECT e.* FROM entries e
+       JOIN projects p ON p.project_id = e.project_id
+       WHERE e.project_id = ? AND p.user_id = ?
+       ORDER BY CASE WHEN e.type = 'foundational' THEN 0 ELSE 1 END ASC, e.timestamp DESC
+       LIMIT ?`
+    : `SELECT * FROM entries
+       WHERE project_id = ?
+       ORDER BY CASE WHEN type = 'foundational' THEN 0 ELSE 1 END ASC, timestamp DESC
+       LIMIT ?`;
+
+  const params = userId ? [projectId, userId, limit] : [projectId, limit];
+  const rows = db.prepare(query).all(...params) as (Omit<Entry, 'tags'> & { tags: string })[];
 
   return rows.map(row => ({ ...row, tags: JSON.parse(row.tags) }));
 }
@@ -124,7 +131,7 @@ export function getEntryCount(projectId: string): number {
   return row.count;
 }
 
-export function searchEntries(projectId: string, keywords: string[]): SearchResult[] {
+export function searchEntries(projectId: string, keywords: string[], userId: string): SearchResult[] {
   const db = getDb();
 
   if (keywords.length === 0) return [];
@@ -142,11 +149,13 @@ export function searchEntries(projectId: string, keywords: string[]): SearchResu
       e.tags
     FROM entries_fts
     JOIN entries e ON e.rowid = entries_fts.rowid
+    JOIN projects p ON p.project_id = e.project_id
     WHERE entries_fts MATCH ?
       AND e.project_id = ?
+      AND p.user_id = ?
     ORDER BY rank
     LIMIT 20
-  `).all(ftsQuery, projectId) as {
+  `).all(ftsQuery, projectId, userId) as {
     entry_id: string;
     title: string;
     snippet: string;

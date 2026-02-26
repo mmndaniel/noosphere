@@ -5,7 +5,7 @@ import { ReadInputSchema, read } from './tools/read.js';
 import { PushInputSchema, push } from './tools/push.js';
 import { recordActivity } from './db/buffer.js';
 
-export function createMcpServer(): McpServer {
+export function createMcpServer(userId: string): McpServer {
   const server = new McpServer({
     name: 'noosphere',
     version: '0.1.0',
@@ -18,7 +18,7 @@ export function createMcpServer(): McpServer {
     async (input) => {
       const typed = input as Parameters<typeof browse>[0];
       if (typed.project_id) recordActivity(typed.project_id, 'browse');
-      const result = browse(typed);
+      const result = browse(typed, userId);
       return { content: [{ type: 'text', text: result }] };
     }
   );
@@ -30,7 +30,7 @@ export function createMcpServer(): McpServer {
     async (input) => {
       const typed = input as Parameters<typeof search>[0];
       if (typed.project_id) recordActivity(typed.project_id, 'search');
-      const result = search(typed);
+      const result = search(typed, userId);
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     }
   );
@@ -40,7 +40,7 @@ export function createMcpServer(): McpServer {
     'Read a full entry or a specific section. Use after finding entries via search.',
     ReadInputSchema.shape,
     async (input) => {
-      const result = read(input as Parameters<typeof read>[0]);
+      const result = read(input as Parameters<typeof read>[0], userId);
       return { content: [{ type: 'text', text: result }] };
     }
   );
@@ -52,7 +52,7 @@ export function createMcpServer(): McpServer {
     async (input) => {
       const typed = input as Parameters<typeof push>[0];
       recordActivity(typed.project_id, 'push');
-      const result = push(typed);
+      const result = push(typed, userId);
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     }
   );

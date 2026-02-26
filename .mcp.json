@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "noosphere-dev": {
+      "type": "http",
+      "url": "http://localhost:3456/mcp"
+    }
+  }
+}

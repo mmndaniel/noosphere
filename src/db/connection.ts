@@ -84,5 +84,38 @@ function initSchema(db: Database.Database): void {
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
       FOREIGN KEY (project_id) REFERENCES projects(project_id)
     );
+
+    CREATE TABLE IF NOT EXISTS users (
+      user_id    TEXT PRIMARY KEY,
+      email      TEXT,
+      name       TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+      last_seen  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS oauth_clients (
+      client_id                TEXT PRIMARY KEY,
+      client_secret            TEXT,
+      client_id_issued_at      INTEGER,
+      client_secret_expires_at INTEGER,
+      redirect_uris            TEXT NOT NULL,
+      client_name              TEXT,
+      client_uri               TEXT,
+      grant_types              TEXT,
+      response_types           TEXT,
+      token_endpoint_auth_method TEXT,
+      scope                    TEXT,
+      created_at               TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    );
   `);
+
+  migrateSchema(db);
+}
+
+function migrateSchema(db: Database.Database): void {
+  const cols = db.pragma('table_info(projects)') as { name: string }[];
+  if (!cols.some(c => c.name === 'user_id')) {
+    db.exec(`ALTER TABLE projects ADD COLUMN user_id TEXT`);
+    db.exec(`UPDATE projects SET user_id = 'local' WHERE user_id IS NULL`);
+  }
 }

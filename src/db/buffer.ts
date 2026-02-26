@@ -47,6 +47,14 @@ export interface BufferFragment {
   created_at: string;
 }
 
+export function verifyProjectOwnership(projectId: string, userId: string): boolean {
+  const db = getDb();
+  const row = db.prepare(
+    'SELECT 1 FROM projects WHERE project_id = ? AND user_id = ?'
+  ).get(projectId, userId);
+  return !!row;
+}
+
 export function appendFragment(projectId: string, fragment: string): void {
   const db = getDb();
   db.prepare(

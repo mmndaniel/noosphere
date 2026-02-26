@@ -8,8 +8,8 @@ export const ReadInputSchema = z.object({
 
 export type ReadInput = z.infer<typeof ReadInputSchema>;
 
-export function read(input: ReadInput): string {
-  const entry = getEntry(input.entry_id);
+export function read(input: ReadInput, userId: string): string {
+  const entry = getEntry(input.entry_id, userId);
   if (!entry) {
     return `Entry "${input.entry_id}" not found.`;
   }

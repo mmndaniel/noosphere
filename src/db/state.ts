@@ -70,12 +70,12 @@ const SECTION_ORDER = [
   'Continuation Hints',
 ];
 
-export function reconstructState(projectId: string): string {
+export function reconstructState(projectId: string, userId: string): string {
   const db = getDb();
 
   const project = db.prepare(
-    'SELECT project_id, name, created_at FROM projects WHERE project_id = ?'
-  ).get(projectId) as { project_id: string; name: string; created_at: string } | undefined;
+    'SELECT project_id, name, created_at FROM projects WHERE project_id = ? AND user_id = ?'
+  ).get(projectId, userId) as { project_id: string; name: string; created_at: string } | undefined;
 
   if (!project) return '';
 
@@ -150,7 +150,7 @@ export interface ProjectSummary {
   entry_count: number;
 }
 
-export function listAllProjects(): ProjectSummary[] {
+export function listAllProjects(userId: string): ProjectSummary[] {
   const db = getDb();
 
   const rows = db.prepare(`
@@ -162,9 +162,10 @@ export function listAllProjects(): ProjectSummary[] {
       MAX(e.timestamp) AS last_activity
     FROM projects p
     LEFT JOIN entries e ON e.project_id = p.project_id
+    WHERE p.user_id = ?
     GROUP BY p.project_id
     ORDER BY COALESCE(MAX(e.timestamp), p.created_at) DESC
-  `).all() as {
+  `).all(userId) as {
     project_id: string;
     name: string;
     created_at: string;
@@ -190,11 +191,11 @@ export function listAllProjects(): ProjectSummary[] {
   });
 }
 
-export function ensureProject(projectId: string, name: string): void {
+export function ensureProject(projectId: string, name: string, userId: string): void {
   const db = getDb();
   db.prepare(`
-    INSERT INTO projects (project_id, name)
-    VALUES (?, ?)
+    INSERT INTO projects (project_id, name, user_id)
+    VALUES (?, ?, ?)
     ON CONFLICT(project_id) DO NOTHING
-  `).run(projectId, name);
+  `).run(projectId, name, userId);
 }

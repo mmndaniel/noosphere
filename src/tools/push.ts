@@ -29,10 +29,10 @@ export const PushInputSchema = z.object({
 
 export type PushInput = z.infer<typeof PushInputSchema>;
 
-export function push(input: PushInput): object {
+export function push(input: PushInput, userId: string): object {
   // Derive project name: last segment of the project_id or the full string
   const name = input.project_id.split('/').pop() ?? input.project_id;
-  ensureProject(input.project_id, name);
+  ensureProject(input.project_id, name, userId);
 
   const result: Record<string, string> = {};
 

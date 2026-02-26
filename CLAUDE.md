@@ -1,22 +1,26 @@
 
-## Noosphere — Project Memory
+## Noosphere — Dev Conventions
 
-This project uses Noosphere for cross-tool context sharing.
-Project ID: noosphere
+This is the Noosphere codebase. Noosphere is an MCP server for persistent
+AI memory across tools. Project ID: `noosphere`
 
-You have access to these MCP tools: browse, search, read, push.
+### Two MCP servers — know the difference
 
-### At session start:
-- Call `browse` with this project's ID to load current context
-  and continuation hints. Build a todo list from those hints.
+| Server | Purpose | When to use |
+|--------|---------|-------------|
+| `noosphere` (prod) | Real project memory at usenoosphere.ai | Browse/push project context, session summaries, decisions |
+| `noosphere-dev` (local) | Dev instance at localhost:3456 | Testing server code changes only |
 
-### During work:
-- Push immediately after any of these:
-  - A task is verified working (e.g. a connection test passes)
-  - A key decision is made
-  - A feature or fix is complete
-- Update `state_deltas` to reflect the new reality (don't leave stale state).
+**Default to prod (`noosphere`) for all project memory operations.**
+Only use `noosphere-dev` when actively testing changes to the MCP server itself.
 
-### At session end:
-- Always `push` a final summary. Include remaining todo items
-  as the Continuation Hint so the next session picks up where you left off.
+### Testing: use the MCP tools, not direct HTTP
+- **Always prefer `noosphere-dev` MCP tools** (browse, push, search, read) over
+  curl, fetch, or direct DB queries when interacting with the local server.
+- This is the product surface — using it is dogfooding. Bypassing it hides bugs.
+- Only go direct HTTP when debugging HTTP-level behavior (status codes, headers,
+  auth rejection responses) that the MCP abstraction hides.
+
+### Build
+- `npm run build` (esbuild) — do NOT use `tsc`, it hangs/OOMs
+- Deploy: `~/.fly/bin/flyctl deploy`
