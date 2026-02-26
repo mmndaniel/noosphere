@@ -153,7 +153,7 @@ Any MCP-compatible tool can use the same server. Point it at:
 http://localhost:3456/mcp
 ```
 
-For Claude web or remote access, you'll need to expose the server publicly (e.g. via a VPS or tunnel). Auth is coming in a later phase — for now it's open, so only do this on a trusted network.
+For Claude web or remote access, you'll need to expose the server publicly (e.g. via a VPS or tunnel). Set the `NOOSPHERE_TOKEN` env var to enable auth.
 
 ---
 
