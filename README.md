@@ -22,7 +22,7 @@ Any AI tool with MCP support can read from and write to it using four tools: `br
 ### 1. Start the server
 
 ```bash
-cd /home/daniel-vm/noosphere
+cd /path/to/noosphere
 ./start.sh
 ```
 
@@ -31,7 +31,7 @@ The server runs on port 3456. To stop it: `./stop.sh`.
 To start it automatically whenever you open a terminal, add this to your `~/.bashrc` or `~/.zshrc`:
 
 ```bash
-/home/daniel-vm/noosphere/start.sh &>/dev/null
+/path/to/noosphere/start.sh &>/dev/null
 ```
 
 ### 2. Connect Claude Code
@@ -43,7 +43,7 @@ The MCP config is already in `~/.claude/settings.json`. Just restart Claude Code
 Run this from inside your project directory:
 
 ```bash
-/home/daniel-vm/noosphere/init-project.sh .
+/path/to/noosphere/init-project.sh .
 ```
 
 This detects your git remote URL, uses it as the `project_id`, and appends Noosphere instructions to your `CLAUDE.md`. That's the file Claude Code reads at session start — so from now on, Claude will automatically load your project's memory and save to it.
@@ -51,7 +51,7 @@ This detects your git remote URL, uses it as the `project_id`, and appends Noosp
 **No git repo?** Pass a name manually:
 
 ```bash
-/home/daniel-vm/noosphere/init-project.sh . "my-project-name"
+/path/to/noosphere/init-project.sh . "my-project-name"
 ```
 
 ---
