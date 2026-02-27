@@ -37,13 +37,13 @@
   <h3>Claude.ai</h3>
   <p><a href="https://claude.ai">claude.ai</a> &rarr; Customize &rarr; Integrations &rarr; Add &rarr; paste the URL above.</p>
 
-  <h3>ChatGPT</h3>
+  <h3><a href="https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt-beta">ChatGPT</a></h3>
   <p>Settings &rarr; Apps &rarr; Create &rarr; paste the URL above. Requires Pro, Team, or Enterprise with Developer Mode enabled.</p>
 
-  <h3>Claude Code</h3>
+  <h3><a href="https://code.claude.com/docs/en/mcp">Claude Code</a></h3>
   <pre><code>claude mcp add noosphere --transport http --scope user https://usenoosphere.ai/mcp</code></pre>
 
-  <h3>Cursor</h3>
+  <h3><a href="https://docs.cursor.com/context/model-context-protocol">Cursor</a></h3>
   <p>Add to <code>~/.cursor/mcp.json</code>:</p>
   <pre><code>{
   "mcpServers": {
@@ -53,7 +53,12 @@
   }
 }</code></pre>
 
-  <h3>Windsurf</h3>
+  <h3><a href="https://developers.openai.com/codex/mcp">Codex</a></h3>
+  <p>Add to <code>~/.codex/config.toml</code>:</p>
+  <pre><code>[mcp_servers.noosphere]
+url = "https://usenoosphere.ai/mcp"</code></pre>
+
+  <h3><a href="https://docs.windsurf.com/windsurf/cascade/mcp">Windsurf</a></h3>
   <p>Add to <code>~/.codeium/windsurf/mcp_config.json</code>:</p>
   <pre><code>{
   "mcpServers": {

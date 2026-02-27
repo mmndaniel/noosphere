@@ -39,17 +39,17 @@ https://usenoosphere.ai/mcp
 
 [claude.ai](https://claude.ai) → Customize → Integrations → Add → paste the URL above.
 
-### ChatGPT
+### [ChatGPT](https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt-beta)
 
 Settings → Apps → Create → paste the URL above. Requires Pro, Team, or Enterprise with Developer Mode enabled.
 
-### Claude Code
+### [Claude Code](https://code.claude.com/docs/en/mcp)
 
 ```bash
 claude mcp add noosphere --transport http --scope user https://usenoosphere.ai/mcp
 ```
 
-### Cursor
+### [Cursor](https://docs.cursor.com/context/model-context-protocol)
 
 Add to `~/.cursor/mcp.json`:
 
@@ -63,7 +63,16 @@ Add to `~/.cursor/mcp.json`:
 }
 ```
 
-### Windsurf
+### [Codex](https://developers.openai.com/codex/mcp)
+
+Add to `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.noosphere]
+url = "https://usenoosphere.ai/mcp"
+```
+
+### [Windsurf](https://docs.windsurf.com/windsurf/cascade/mcp)
 
 Add to `~/.codeium/windsurf/mcp_config.json`:
 
