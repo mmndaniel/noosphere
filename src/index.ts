@@ -1,7 +1,11 @@
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createMcpServer } from './server.js';
 import { createAuthMiddleware } from './middleware/auth.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = parseInt(process.env.PORT ?? '3000', 10);
 const HOST = process.env.HOST; // undefined = localhost only, set to '0.0.0.0' for container/cloud
@@ -81,6 +85,14 @@ app.post('/mcp', authMiddleware, async (req, res) => {
   await server.connect(transport);
   await transport.handleRequest(req, res, req.body);
 });
+
+// Homepage — serve static files from public/
+const publicDir = path.join(__dirname, '../public');
+const homepage = path.join(publicDir, 'index.html');
+
+app.get('/', (_req, res) => { res.sendFile(homepage); });
+app.get('/mcp', (_req, res) => { res.sendFile(homepage); });
+app.use(express.static(publicDir));
 
 // Health check
 app.get('/health', (_req, res) => {

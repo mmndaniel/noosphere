@@ -16,6 +16,7 @@ COPY package.json yarn.lock ./
 RUN yarn install --production --frozen-lockfile
 
 COPY --from=build /app/dist dist/
+COPY public/ public/
 RUN mkdir -p data
 
 ENV PORT=3000

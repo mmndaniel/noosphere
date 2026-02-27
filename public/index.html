@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Noosphere — Working memory for your AI tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 640px; margin: 0 auto; padding: 2rem 1.5rem; }
+    h1 { font-size: 1.8rem; margin-bottom: 0.25rem; }
+    .tagline { font-size: 1.1rem; color: #555; margin-bottom: 1.5rem; }
+    p { margin-bottom: 1rem; }
+    h2 { font-size: 1.2rem; margin: 2rem 0 0.75rem; }
+    code { background: #f0f0f0; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.9em; }
+    pre { background: #f0f0f0; padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 0.75rem 0 1rem; }
+    pre code { background: none; padding: 0; }
+    .step { margin-bottom: 0.5rem; }
+    a { color: #0066cc; }
+    .footer { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0; color: #777; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <h1>Noosphere</h1>
+  <p class="tagline">Working memory for your AI tools.</p>
+
+  <p>Your thinking is scattered across threads, tools, and devices. Each conversation is a silo &mdash; what you figured out in one doesn't exist in the next. Noosphere connects them.</p>
+
+  <p>Think out loud on your phone, build at your desk, refine in a different tool. They all share the same brain.</p>
+
+  <h2>Connect your tools</h2>
+
+  <p><strong>Claude.ai web</strong></p>
+  <div class="step">1. Go to <a href="https://claude.ai/settings">claude.ai/settings</a> &rarr; Integrations / MCP Servers</div>
+  <div class="step">2. Add server URL: <code>https://usenoosphere.ai/mcp</code></div>
+  <div class="step">3. Complete the OAuth login</div>
+
+  <p style="margin-top: 1rem;"><strong>Claude Code</strong></p>
+  <pre><code>claude mcp add noosphere --transport http --scope user https://usenoosphere.ai/mcp</code></pre>
+
+  <p><strong>Any other MCP tool</strong></p>
+  <p>Point it at <code>https://usenoosphere.ai/mcp</code></p>
+
+  <h2>Then just talk naturally</h2>
+  <p>&ldquo;What were we working on?&rdquo;<br>
+     &ldquo;Remember this decision&rdquo;<br>
+     &ldquo;Save where we are&rdquo;</p>
+
+  <p>The AI handles everything behind the scenes. No commands to learn.</p>
+
+  <div class="footer">
+    <a href="https://github.com/mmndaniel/noosphere">GitHub</a> &middot; Free and open source
+  </div>
+</body>
+</html>
