@@ -108,20 +108,6 @@ For git projects, the AI typically derives the project_id from the remote URL (e
 
 ---
 
-## Optional: Add CLAUDE.md instructions to a project
-
-If you want Claude Code to automatically browse Noosphere at session start and push at session end, you can add instructions to a project's `CLAUDE.md`:
-
-```bash
-./init-project.sh /path/to/project
-```
-
-This appends Noosphere workflow instructions to `CLAUDE.md` and installs a post-commit git hook that flushes the buffer on each commit.
-
-You can also add the instructions manually — see `init-project.sh` for what gets appended.
-
----
-
 ## Todo lists + Noosphere
 
 Claude Code's built-in todo list tracks tasks within a single session. Noosphere makes that persist across sessions:

@@ -20,11 +20,7 @@ function formatEntry(e: Entry, lead: string): string {
 }
 
 export function synthesizeBrowse(stateMarkdown: string, entries: Entry[]): string {
-  // Separate auto-push markers from regular entries
-  const markers = entries.filter(e => e.tags.includes('auto-push'));
-  const regularEntries = entries.filter(e => !e.tags.includes('auto-push'));
-
-  const classified: ClassifiedEntry[] = regularEntries.map(entry => ({
+  const classified: ClassifiedEntry[] = entries.map(entry => ({
     entry,
     classification: classifyContent(entry.content),
   }));
@@ -64,16 +60,6 @@ export function synthesizeBrowse(stateMarkdown: string, entries: Entry[]): strin
     sections.push('## Other Entries\n');
     for (const { entry } of informational) {
       sections.push(formatEntry(entry, leadParagraph(entry.content)));
-    }
-    sections.push('');
-  }
-
-  // Surface auto-push warnings
-  if (markers.length > 0) {
-    sections.push('## Warnings\n');
-    for (const entry of markers) {
-      const ts = entry.timestamp.slice(0, 16).replace('T', ' ');
-      sections.push(`- **${entry.title}** (*${ts}*) — A previous session may have lost context. Consider pushing a summary if you recall what was discussed.`);
     }
     sections.push('');
   }

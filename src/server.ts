@@ -3,7 +3,6 @@ import { BrowseInputSchema, browse } from './tools/browse.js';
 import { SearchInputSchema, search } from './tools/search.js';
 import { ReadInputSchema, read } from './tools/read.js';
 import { PushInputSchema, push } from './tools/push.js';
-import { recordActivity } from './db/buffer.js';
 
 export function createMcpServer(userId: string): McpServer {
   const server = new McpServer({
@@ -17,7 +16,6 @@ export function createMcpServer(userId: string): McpServer {
     BrowseInputSchema.shape,
     async (input) => {
       const typed = input as Parameters<typeof browse>[0];
-      if (typed.project_id) recordActivity(typed.project_id, userId, 'browse');
       const result = browse(typed, userId);
       return { content: [{ type: 'text', text: result }] };
     }
@@ -29,7 +27,6 @@ export function createMcpServer(userId: string): McpServer {
     SearchInputSchema.shape,
     async (input) => {
       const typed = input as Parameters<typeof search>[0];
-      if (typed.project_id) recordActivity(typed.project_id, userId, 'search');
       const result = search(typed, userId);
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     }
@@ -51,7 +48,6 @@ export function createMcpServer(userId: string): McpServer {
     PushInputSchema.shape,
     async (input) => {
       const typed = input as Parameters<typeof push>[0];
-      recordActivity(typed.project_id, userId, 'push');
       const result = push(typed, userId);
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     }

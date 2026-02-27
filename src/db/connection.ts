@@ -79,14 +79,6 @@ function initSchema(db: Database.Database): void {
         VALUES (new.rowid, new.title, new.content, new.tags);
     END;
 
-    CREATE TABLE IF NOT EXISTS buffer_fragments (
-      id         INTEGER PRIMARY KEY AUTOINCREMENT,
-      project_id TEXT NOT NULL,
-      user_id    TEXT NOT NULL DEFAULT 'local',
-      fragment   TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
-    );
-
     CREATE TABLE IF NOT EXISTS users (
       user_id    TEXT PRIMARY KEY,
       email      TEXT,
@@ -240,32 +232,8 @@ function migrateSchema(db: Database.Database): void {
       END;
     `);
 
-    // 4. Recreate buffer_fragments without FK constraint, adding user_id
-    const bfCols = db.pragma('table_info(buffer_fragments)') as { name: string }[];
-    const bfHasUserId = bfCols.some(c => c.name === 'user_id');
-
-    db.exec(`
-      CREATE TABLE buffer_fragments_new (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        project_id TEXT NOT NULL,
-        user_id    TEXT NOT NULL DEFAULT 'local',
-        fragment   TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
-      );
-    `);
-    db.exec(bfHasUserId
-      ? `INSERT INTO buffer_fragments_new (id, project_id, user_id, fragment, created_at)
-           SELECT id, project_id, user_id, fragment, created_at
-           FROM buffer_fragments`
-      : `INSERT INTO buffer_fragments_new (id, project_id, user_id, fragment, created_at)
-           SELECT bf.id, bf.project_id, COALESCE(p.user_id, 'local'), bf.fragment, bf.created_at
-           FROM buffer_fragments bf
-           LEFT JOIN projects p ON p.project_id = bf.project_id`
-    );
-    db.exec(`
-      DROP TABLE buffer_fragments;
-      ALTER TABLE buffer_fragments_new RENAME TO buffer_fragments;
-    `);
+    // 4. Drop unused buffer_fragments table
+    db.exec(`DROP TABLE IF EXISTS buffer_fragments;`);
   });
 
   migrate();
