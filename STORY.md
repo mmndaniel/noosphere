@@ -26,7 +26,7 @@ Code lives in git. Tasks live in Linear. Documentation lives in Notion. But ther
 
 Today this layer lives in your head, in Slack DMs to yourself, in conversations that scroll away. It's the most frequently lost category of knowledge because nothing holds it.
 
-That's what Noosphere is. Working memory for your AI tools. The brainstorm on your phone gets pushed — not as a "prompt" you have to copy, but into a persistent layer that any AI tool can read. When you sit down at your desk and open Claude Code, it's already there. Not a transcript. The distilled thinking. You say "let's build what we talked about" and it knows.
+That's what Noosphere is. Working memory for your AI tools. The brainstorm on your phone gets saved — not as a "prompt" you have to copy, but into a persistent layer that any AI tool can read. When you sit down at your desk and open Claude Code, it's already there. Not a transcript. The distilled thinking. You say "let's build what we talked about" and it knows.
 
 ---
 
@@ -34,7 +34,7 @@ That's what Noosphere is. Working memory for your AI tools. The brainstorm on yo
 
 ### The phone brainstorm
 
-You're walking, thinking out loud with an AI. The idea sharpens over twenty minutes of back-and-forth. Before Noosphere: you ask for a summary prompt, copy it, DM it to yourself, paste it into a new session later, lose half the nuance. With Noosphere: the AI pushes the distilled thinking. You open any tool on any device and it's there.
+You're walking, thinking out loud with an AI. The idea sharpens over twenty minutes of back-and-forth. Before Noosphere: you ask for a summary prompt, copy it, DM it to yourself, paste it into a new session later, lose half the nuance. With Noosphere: the AI saves the distilled thinking. You open any tool on any device and it's there.
 
 *Example: You brainstorm a new feature with Claude on your phone during your commute. At your desk, you open Claude Code and say "let's build the notification system we designed." It already knows the approach, the edge cases you discussed, and the decision to use SSE over WebSockets.*
 
@@ -48,7 +48,7 @@ You're deep in something and have to stop. Tomorrow you pick up in a different t
 
 Different AI tools have different strengths. You want to start rough in one and refine in another. Before: copy-paste prompts between tools, re-establish context each time, lose the thread. With Noosphere: every tool reads from the same working memory.
 
-*Example: You throw a rough product idea at ChatGPT for rapid brainstorming. It generates three positioning angles. You push that to Noosphere, open Claude, and say "angle 2 was interesting but the messaging is wrong for developers." Claude already knows all three angles and why you're drawn to the second one.*
+*Example: You throw a rough product idea at ChatGPT for rapid brainstorming. It generates three positioning angles. You save that to Noosphere, open Claude, and say "angle 2 was interesting but the messaging is wrong for developers." Claude already knows all three angles and why you're drawn to the second one.*
 
 ### The forking exploration
 

@@ -2,9 +2,13 @@
 
 **Working memory of your context for AI tools.**
 
-Your thinking is scattered across threads, tools, and devices. Each conversation is a silo — what you figured out in one doesn't exist in the next. Noosphere is the working memory layer that connects them. Think out loud on your phone, build at your desk, refine in a different tool. They all share the same brain.
+Your thinking is scattered across threads, tools, and devices. Each conversation is a silo — what you figured out in one doesn't exist in the next. Noosphere is the working memory layer that connects them. Think out loud on your phone, build at your desk, refine in a different tool. They all share the same context.
 
-Code lives in git. Tasks live in Linear. Docs live in Notion. Noosphere holds the layer underneath — the brainstorm that hasn't become a decision yet, the decision that hasn't become code yet, the *why* behind every *what*. The stuff that's too raw for any system of record but too valuable to lose.
+You spend an hour refining an approach with Claude, then open Cursor and have to explain it all over again. You brainstorm on your phone, then sit down at your desk and it's gone. The thinking lives in context windows and people's heads — and both get cleared.
+
+Code lives in git. Tasks live in Linear. Docs live in Notion. But the layer underneath — the brainstorm that hasn't become a decision yet, the decision that hasn't become code yet, the *why* behind every *what* — has nowhere to go. It's too raw for any system of record but too valuable to lose.
+
+Noosphere is that layer. Connect your tools and they share the same working memory. Think out loud in one, pick up where you left off in another.
 
 Read the full origin story and use cases in [STORY.md](STORY.md).
 
