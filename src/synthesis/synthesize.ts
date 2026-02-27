@@ -15,8 +15,9 @@ function leadParagraph(content: string): string {
 }
 
 function formatEntry(e: Entry, lead: string): string {
-  const ts = e.timestamp.slice(0, 16).replace('T', ' ');
-  return `- **${e.title}** (*${e.type} · ${ts}*) — ${lead}  \n  → \`read ${e.entry_id}\``;
+  const d = new Date(e.timestamp);
+  const ts = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return `- **${e.title}** (*${ts}*) — ${lead}`;
 }
 
 export function synthesizeBrowse(stateMarkdown: string, entries: Entry[]): string {
@@ -66,7 +67,7 @@ export function synthesizeBrowse(stateMarkdown: string, entries: Entry[]): strin
 
   // If no entries at all, note that
   if (entries.length === 0) {
-    sections.push('\n*No entries yet. Use `push` to record your first entry.*');
+    sections.push('\n*No entries yet. Save something to record your first entry.*');
   }
 
   return sections.join('\n');

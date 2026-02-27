@@ -44,7 +44,7 @@ export function createMcpServer(userId: string): McpServer {
 
   server.tool(
     'push',
-    'Save a work summary, decision, or project state update. Call at natural checkpoints (roughly when you\'d make a git commit) and at session end.',
+    'Save a work summary, decision, or project state update. Call at natural checkpoints and at session end.',
     PushInputSchema.shape,
     async (input) => {
       const typed = input as Parameters<typeof push>[0];

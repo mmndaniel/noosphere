@@ -15,7 +15,6 @@ export interface SearchResult {
   entry_id: string;
   title: string;
   snippet: string;
-  source_tool: string;
   timestamp: string;
   tags: string[];
 }
@@ -78,7 +77,6 @@ export function entryToMarkdown(entry: Entry): string {
   lines.push(`entry_id: ${entry.entry_id}`);
   lines.push(`project_id: ${entry.project_id}`);
   lines.push(`title: ${entry.title}`);
-  lines.push(`source_tool: ${entry.source_tool}`);
   lines.push(`timestamp: ${entry.timestamp}`);
   lines.push(`tags: [${entry.tags.join(', ')}]`);
   lines.push(`type: ${entry.type}`);
@@ -137,7 +135,6 @@ export function searchEntries(projectId: string, keywords: string[], userId: str
       e.entry_id,
       e.title,
       snippet(entries_fts, 1, '[', ']', '...', 32) AS snippet,
-      e.source_tool,
       e.timestamp,
       e.tags
     FROM entries_fts
@@ -151,7 +148,6 @@ export function searchEntries(projectId: string, keywords: string[], userId: str
     entry_id: string;
     title: string;
     snippet: string;
-    source_tool: string;
     timestamp: string;
     tags: string;
   }[];
@@ -160,7 +156,6 @@ export function searchEntries(projectId: string, keywords: string[], userId: str
     entry_id: row.entry_id,
     title: row.title,
     snippet: row.snippet,
-    source_tool: row.source_tool,
     timestamp: row.timestamp,
     tags: JSON.parse(row.tags),
   }));
