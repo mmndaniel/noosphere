@@ -15,6 +15,7 @@
     pre { background: #f0f0f0; padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 0.75rem 0 1rem; }
     pre code { background: none; padding: 0; }
     .step { margin-bottom: 0.5rem; }
+    .endpoint { background: #f0f0f0; padding: 0.75rem 1rem; border-radius: 6px; font-family: monospace; font-size: 0.95em; margin: 0.75rem 0 1.25rem; }
     a { color: #0066cc; }
     .footer { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0; color: #777; font-size: 0.9rem; }
   </style>
@@ -29,16 +30,16 @@
 
   <h2>Connect your tools</h2>
 
-  <p><strong>Claude.ai web</strong></p>
-  <div class="step">1. Go to <a href="https://claude.ai/settings">claude.ai/settings</a> &rarr; Integrations / MCP Servers</div>
-  <div class="step">2. Add server URL: <code>https://usenoosphere.ai/mcp</code></div>
-  <div class="step">3. Complete the OAuth login</div>
+  <p>Noosphere works with any AI tool that supports <a href="https://modelcontextprotocol.io">MCP</a>. Connect as many as you want &mdash; they all share the same memory.</p>
 
-  <p style="margin-top: 1rem;"><strong>Claude Code</strong></p>
+  <div class="endpoint">https://usenoosphere.ai/mcp</div>
+
+  <p><strong>Claude.ai</strong> &mdash; <a href="https://claude.ai/settings">Settings</a> &rarr; Integrations &rarr; Add MCP Server &rarr; paste the URL above.</p>
+
+  <p><strong>Claude Code</strong></p>
   <pre><code>claude mcp add noosphere --transport http --scope user https://usenoosphere.ai/mcp</code></pre>
 
-  <p><strong>Any other MCP tool</strong></p>
-  <p>Point it at <code>https://usenoosphere.ai/mcp</code></p>
+  <p><strong>Other tools</strong> &mdash; point any MCP client at the URL above. OAuth will prompt you to log in.</p>
 
   <h2>Then just talk naturally</h2>
   <p>&ldquo;What were we working on?&rdquo;<br>
