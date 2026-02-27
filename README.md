@@ -16,7 +16,7 @@ Noosphere is an [MCP server](https://modelcontextprotocol.io). Any AI tool that 
 
 It stores two things per project:
 
-- **Project state** — a living document that's always current: decisions, what's in progress, continuation hints.
+- **Project state** — a living document that's always current: decisions, what's in progress, next steps.
 - **Entry log** — an append-only history of sessions, brainstorms, and decisions you can search and read.
 
 The AI discovers Noosphere automatically and uses it behind the scenes. You don't need to learn any commands — just talk naturally:

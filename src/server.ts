@@ -12,7 +12,7 @@ export function createMcpServer(userId: string): McpServer {
 
   server.tool(
     'browse',
-    'Start here. Returns a list of all projects, or the full project context for a specific project including current state, recent activity, and continuation hints.',
+    'Start here. Returns a list of all projects, or the full project context for a specific project including current state, recent activity, and next steps.',
     BrowseInputSchema.shape,
     async (input) => {
       const typed = input as Parameters<typeof browse>[0];
