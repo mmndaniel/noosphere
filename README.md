@@ -35,9 +35,9 @@ Noosphere is hosted at `usenoosphere.ai`. Connect as many tools as you want — 
 https://usenoosphere.ai/mcp
 ```
 
-### Claude.ai
+### [Claude.ai](https://claude.ai)
 
-[claude.ai](https://claude.ai) → Customize → Integrations → Add → paste the URL above.
+Customize → Integrations → Add → paste the URL above.
 
 ### [ChatGPT](https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt-beta)
 
