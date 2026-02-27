@@ -11,10 +11,10 @@
     .tagline { font-size: 1.1rem; color: #555; margin-bottom: 1.5rem; }
     p { margin-bottom: 1rem; }
     h2 { font-size: 1.2rem; margin: 2rem 0 0.75rem; }
+    h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
     code { background: #f0f0f0; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.9em; }
     pre { background: #f0f0f0; padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 0.75rem 0 1rem; }
     pre code { background: none; padding: 0; }
-    .step { margin-bottom: 0.5rem; }
     .endpoint { background: #f0f0f0; padding: 0.75rem 1rem; border-radius: 6px; font-family: monospace; font-size: 0.95em; margin: 0.75rem 0 1.25rem; }
     a { color: #0066cc; }
     .footer { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0; color: #777; font-size: 0.9rem; }
@@ -34,12 +34,37 @@
 
   <div class="endpoint">https://usenoosphere.ai/mcp</div>
 
-  <p><strong>Claude.ai</strong> &mdash; <a href="https://claude.ai/settings">Settings</a> &rarr; Integrations &rarr; Add MCP Server &rarr; paste the URL above.</p>
+  <h3>Claude.ai</h3>
+  <p><a href="https://claude.ai">claude.ai</a> &rarr; Customize &rarr; Integrations &rarr; Add &rarr; paste the URL above.</p>
 
-  <p><strong>Claude Code</strong></p>
+  <h3>ChatGPT</h3>
+  <p>Settings &rarr; Apps &rarr; Create &rarr; paste the URL above. Requires Pro, Team, or Enterprise with Developer Mode enabled.</p>
+
+  <h3>Claude Code</h3>
   <pre><code>claude mcp add noosphere --transport http --scope user https://usenoosphere.ai/mcp</code></pre>
 
-  <p><strong>Other tools</strong> &mdash; point any MCP client at the URL above. OAuth will prompt you to log in.</p>
+  <h3>Cursor</h3>
+  <p>Add to <code>~/.cursor/mcp.json</code>:</p>
+  <pre><code>{
+  "mcpServers": {
+    "noosphere": {
+      "url": "https://usenoosphere.ai/mcp"
+    }
+  }
+}</code></pre>
+
+  <h3>Windsurf</h3>
+  <p>Add to <code>~/.codeium/windsurf/mcp_config.json</code>:</p>
+  <pre><code>{
+  "mcpServers": {
+    "noosphere": {
+      "serverUrl": "https://usenoosphere.ai/mcp"
+    }
+  }
+}</code></pre>
+
+  <h3>Other tools</h3>
+  <p>Point any MCP-compatible tool at the URL above. OAuth will prompt you to log in.</p>
 
   <h2>Then just talk naturally</h2>
   <p>&ldquo;What were we working on?&rdquo;<br>

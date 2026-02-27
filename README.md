@@ -35,13 +35,13 @@ Noosphere is hosted at `usenoosphere.ai`. Connect as many tools as you want — 
 https://usenoosphere.ai/mcp
 ```
 
-### Claude.ai web
+### Claude.ai
 
-1. Go to [claude.ai/settings](https://claude.ai/settings) → Integrations / MCP Servers
-2. Add a new server with URL: `https://usenoosphere.ai/mcp`
-3. Complete the OAuth login
+[claude.ai](https://claude.ai) → Customize → Integrations → Add → paste the URL above.
 
-This automatically makes Noosphere available in Claude Code too (same account).
+### ChatGPT
+
+Settings → Apps → Create → paste the URL above. Requires Pro, Team, or Enterprise with Developer Mode enabled.
 
 ### Claude Code
 
@@ -49,11 +49,37 @@ This automatically makes Noosphere available in Claude Code too (same account).
 claude mcp add noosphere --transport http --scope user https://usenoosphere.ai/mcp
 ```
 
-Restart Claude Code and run `/mcp` — you'll be prompted to complete OAuth.
+### Cursor
+
+Add to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "noosphere": {
+      "url": "https://usenoosphere.ai/mcp"
+    }
+  }
+}
+```
+
+### Windsurf
+
+Add to `~/.codeium/windsurf/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "noosphere": {
+      "serverUrl": "https://usenoosphere.ai/mcp"
+    }
+  }
+}
+```
 
 ### Any other MCP tool
 
-Point it at `https://usenoosphere.ai/mcp`. Authentication is OAuth — the tool will prompt you to log in on first connection.
+Point it at `https://usenoosphere.ai/mcp`. OAuth will prompt you to log in.
 
 ---
 
