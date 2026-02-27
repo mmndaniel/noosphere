@@ -15,21 +15,21 @@ const ListAppendDeltaSchema = z.object({
 
 const StateDeltaSchema = z.union([KeyValueDeltaSchema, ListAppendDeltaSchema]);
 
-export const PushInputSchema = z.object({
+export const SaveInputSchema = z.object({
   project_id: z.string(),
-  // Entry fields (all optional — can push state only)
+  // Entry fields (all optional — can save state only)
   title: z.string().optional(),
   type: z.enum(['session', 'foundational']).optional(),
   source_tool: z.string().optional(),
   tags: z.array(z.string()).optional(),
   sections: z.record(z.string(), z.string()).optional(),
-  // State update (optional — can push entry only)
+  // State update (optional — can save entry only)
   state_deltas: z.array(StateDeltaSchema).optional(),
 });
 
-export type PushInput = z.infer<typeof PushInputSchema>;
+export type SaveInput = z.infer<typeof SaveInputSchema>;
 
-export function push(input: PushInput, userId: string): object {
+export function save(input: SaveInput, userId: string): object {
   // Derive project name: last segment of the project_id or the full string
   const name = input.project_id.split('/').pop() ?? input.project_id;
   ensureProject(input.project_id, name, userId);

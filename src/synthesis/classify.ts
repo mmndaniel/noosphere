@@ -48,7 +48,7 @@ export function classifyContent(text: string): ContentClass {
   if (speculativeScore > 0 && speculativeScore > decisionScore) return 'speculative';
 
   // No strong signal either way — check if it looks like ongoing work
-  if (/\bin progress\b/i.test(text) || /\bcontinuation\b/i.test(text) || /\bnext step/i.test(text)) {
+  if (/\bin progress\b/i.test(text) || /\bnext step/i.test(text)) {
     return 'active';
   }
 

@@ -99,6 +99,13 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'noosphere' });
 });
 
+// Catch-all error handler — prevent stack trace leakage
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
 const listenArgs: [number, ...any[]] = HOST
   ? [PORT, HOST, () => {
       console.log(`Noosphere MCP server listening on http://${HOST}:${PORT}`);

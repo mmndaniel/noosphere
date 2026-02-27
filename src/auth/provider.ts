@@ -130,7 +130,8 @@ export class Auth0ProxyProvider extends ProxyOAuthServerProvider {
 
     if (!response.ok) {
       const text = await response.text();
-      throw new ServerError(`Token exchange failed: ${response.status} ${text}`);
+      console.error('Auth0 token exchange failed:', response.status, text);
+      throw new ServerError('Token exchange failed. Please try again.');
     }
 
     return OAuthTokensSchema.parse(await response.json());
@@ -161,7 +162,8 @@ export class Auth0ProxyProvider extends ProxyOAuthServerProvider {
 
     if (!response.ok) {
       const text = await response.text();
-      throw new ServerError(`Token refresh failed: ${response.status} ${text}`);
+      console.error('Auth0 token refresh failed:', response.status, text);
+      throw new ServerError('Token refresh failed. Please try again.');
     }
 
     return OAuthTokensSchema.parse(await response.json());

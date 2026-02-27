@@ -1,6 +1,6 @@
 # Noosphere
 
-**Working memory for your AI tools.**
+**Working memory for your context and AI tools.**
 
 Your thinking is scattered across threads, tools, and devices. Each conversation is a silo — what you figured out in one doesn't exist in the next. Noosphere is the working memory layer that connects them. Think out loud on your phone, build at your desk, refine in a different tool. They all share the same brain.
 

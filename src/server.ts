@@ -2,7 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { BrowseInputSchema, browse } from './tools/browse.js';
 import { SearchInputSchema, search } from './tools/search.js';
 import { ReadInputSchema, read } from './tools/read.js';
-import { PushInputSchema, push } from './tools/push.js';
+import { SaveInputSchema, save } from './tools/save.js';
 
 export function createMcpServer(userId: string): McpServer {
   const server = new McpServer({
@@ -45,10 +45,10 @@ export function createMcpServer(userId: string): McpServer {
   server.tool(
     'save',
     'Save a work summary, decision, or project state update. Call at natural checkpoints and at session end.',
-    PushInputSchema.shape,
+    SaveInputSchema.shape,
     async (input) => {
-      const typed = input as Parameters<typeof push>[0];
-      const result = push(typed, userId);
+      const typed = input as Parameters<typeof save>[0];
+      const result = save(typed, userId);
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     }
   );
