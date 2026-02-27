@@ -1,19 +1,23 @@
 # Noosphere
 
-**The shared mind for your AI tools.**
+**Working memory for your AI tools.**
 
-An MCP server that gives any AI tool persistent memory. Build in Claude Code, ask about it in Claude web, pick up where you left off in Cursor — every tool shares the same brain.
+Every AI conversation starts from zero. Your thinking — the brainstorms, the decisions, the context — evaporates when you close the tab. Noosphere is the working memory layer that makes it persist. Think out loud on your phone, build at your desk, refine in a different tool. Every session picks up where the last one left off.
+
+Code lives in git. Tasks live in Linear. Docs live in Notion. Noosphere holds the layer underneath — the brainstorm that hasn't become a decision yet, the decision that hasn't become code yet, the *why* behind every *what*. The stuff that's too raw for any system of record but too valuable to lose.
+
+Read the full origin story and use cases in [STORY.md](STORY.md).
 
 ---
 
 ## How it works
 
-Noosphere stores two things per project:
+Noosphere is an [MCP server](https://modelcontextprotocol.io) that any AI tool can connect to. It stores two things per project:
 
-- **Project state** — a living document that's always current: architecture, decisions, what's in progress, continuation hints.
-- **Entry log** — an append-only history of sessions and decisions you can search and read.
+- **Project state** — a living document that's always current: decisions, what's in progress, continuation hints.
+- **Entry log** — an append-only history of sessions, brainstorms, and decisions you can search and read.
 
-Any AI tool with MCP support can read from and write to it using four tools: `browse`, `search`, `read`, `push`. No config files required — the tools are self-describing. The AI learns how to use them from the tool descriptions and the protocol hints embedded in browse output.
+Four tools: `browse`, `search`, `read`, `push`. No config files required — the tools are self-describing. The AI learns how to use them on its own.
 
 ---
 
@@ -49,34 +53,23 @@ No project setup is needed. A `project_id` is just a string — the first `push`
 
 ### Starting a session
 
-Ask the AI to browse your project, or just start working — it'll discover the tools on its own. You'll see something like:
-
-```
-## Current State
-- auth: complete
-- billing: in progress
-
-## Continuation Hints
-- latest: Was writing the webhook handler, next step is idempotency check
-```
-
-Claude picks up from there.
+Ask the AI to browse your project, or just start working — it'll discover the tools on its own. It loads your current state and picks up where you left off.
 
 ### During work
 
-Claude will push summaries at natural checkpoints. You can also ask explicitly:
+The AI pushes summaries at natural checkpoints — decisions made, milestones reached, direction changes. You can also ask explicitly:
 
-> "Push a summary to Noosphere"
-> "Save this decision to Noosphere"
-> "Update the project state — auth is now complete"
+> "Push this to Noosphere"
+> "Save this decision"
+> "Update the state — auth is complete"
 
 ### Ending a session
 
-Before closing, say:
+Before closing:
 
-> "Push a session summary to Noosphere with continuation hints"
+> "Push a session summary with continuation hints"
 
-This saves what you did and what comes next — so the next session (or another tool) picks up exactly where you left off.
+This saves what you did and what comes next — so the next session (in any tool, on any device) picks up exactly where you left off.
 
 ---
 
