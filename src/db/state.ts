@@ -67,7 +67,7 @@ const SECTION_ORDER = [
   'Active Decisions',
   'Current State',
   'Recent Activity',
-  'Continuation Hints',
+  'Next Steps',
 ];
 
 export function reconstructState(projectId: string, userId: string): string {

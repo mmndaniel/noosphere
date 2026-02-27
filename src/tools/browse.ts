@@ -9,16 +9,15 @@ export const BrowseInputSchema = z.object({
 
 export type BrowseInput = z.infer<typeof BrowseInputSchema>;
 
-const PROTOCOL_COMMENT = `<!-- Noosphere protocol: When you complete significant work, make a
-key decision, or end this session, call \`push\` with a summary including
-what you did and what comes next. This enables other tools to pick up
-where you left off. -->`;
+const PROTOCOL_COMMENT = `<!-- When you complete significant work, make a
+key decision, or end this session, save a summary of what you did and
+what comes next. This enables other tools to pick up where you left off. -->`;
 
 export function browse(input: BrowseInput, userId: string): string {
   if (!input.project_id) {
     const projects = listAllProjects(userId);
     if (projects.length === 0) {
-      return 'No projects found. Use `push` with a project_id to create your first project.';
+      return 'No projects found. Save something to create your first project.';
     }
     const lines = projects.map(p => {
       const summary = p.summary ? ` — ${p.summary}` : '';
@@ -29,7 +28,7 @@ export function browse(input: BrowseInput, userId: string): string {
 
   const stateMarkdown = reconstructState(input.project_id, userId);
   if (!stateMarkdown) {
-    return `Project "${input.project_id}" not found. Use \`push\` to create it.\n\n${PROTOCOL_COMMENT}`;
+    return `Project "${input.project_id}" not found. Save something to create it.\n\n${PROTOCOL_COMMENT}`;
   }
 
   const totalEntries = getEntryCount(input.project_id, userId);
@@ -37,7 +36,7 @@ export function browse(input: BrowseInput, userId: string): string {
   const synthesized = synthesizeBrowse(stateMarkdown, entries);
 
   const footer = totalEntries > entries.length
-    ? `\n*Showing ${entries.length} of ${totalEntries} entries. Use \`search\` to find older entries.*`
+    ? `\n*Showing ${entries.length} of ${totalEntries} entries. Search to find older entries.*`
     : '';
 
   return `${synthesized}${footer}\n${PROTOCOL_COMMENT}`;
