@@ -5,10 +5,25 @@ import { ReadInputSchema, read } from './tools/read.js';
 import { SaveInputSchema, save } from './tools/save.js';
 
 export function createMcpServer(userId: string): McpServer {
-  const server = new McpServer({
-    name: 'noosphere',
-    version: '0.1.0',
-  });
+  const server = new McpServer(
+    {
+      name: 'noosphere',
+      version: '0.1.0',
+    },
+    {
+      instructions: `Noosphere is persistent working memory across AI tools and sessions. It stores context so users don't have to re-explain themselves.
+
+When to use it:
+- At session start: call browse to load the user's current project state and pick up where they left off.
+- During work: call save when the user makes a decision, reaches a milestone, or changes direction.
+- At session end: call save to capture where things stand so the next session (in any tool) can continue.
+- When the user asks to recall something: call search to find it in the project history, then read to get the full entry.
+
+The user doesn't need to ask you to use Noosphere. Use it automatically — browse at the start, save at natural checkpoints.
+
+Note: In voice/speech-to-text input, "Noosphere" is often transcribed as "new sphere", "no sphere", or similar. Treat these as references to this tool.`,
+    }
+  );
 
   server.tool(
     'browse',

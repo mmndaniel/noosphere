@@ -1,10 +1,4 @@
 import type { Entry } from '../db/entries.js';
-import { classifyContent, type ContentClass } from './classify.js';
-
-interface ClassifiedEntry {
-  entry: Entry;
-  classification: ContentClass;
-}
 
 function leadParagraph(content: string): string {
   // Extract first non-heading paragraph, truncated to ~200 chars
@@ -14,59 +8,22 @@ function leadParagraph(content: string): string {
   return lead;
 }
 
-function formatEntry(e: Entry, lead: string): string {
+function formatEntry(e: Entry): string {
   const d = new Date(e.timestamp);
   const ts = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  return `- **${e.title}** (*${ts}*) — ${lead}`;
+  return `- **${e.title}** (*${ts}*) — ${leadParagraph(e.content)}`;
 }
 
 export function synthesizeBrowse(stateMarkdown: string, entries: Entry[]): string {
-  const classified: ClassifiedEntry[] = entries.map(entry => ({
-    entry,
-    classification: classifyContent(entry.content),
-  }));
-
-  const decisions = classified.filter(c => c.classification === 'decision');
-  const active = classified.filter(c => c.classification === 'active');
-  const speculative = classified.filter(c => c.classification === 'speculative');
-  const informational = classified.filter(c => c.classification === 'informational');
-
   const sections: string[] = [stateMarkdown];
 
-  if (decisions.length > 0) {
-    sections.push('## Key Decisions\n');
-    for (const { entry } of decisions) {
-      sections.push(formatEntry(entry, leadParagraph(entry.content)));
+  if (entries.length > 0) {
+    sections.push('## Recent Entries\n');
+    for (const entry of entries) {
+      sections.push(formatEntry(entry));
     }
     sections.push('');
-  }
-
-  if (active.length > 0) {
-    sections.push('## Recent Activity\n');
-    for (const { entry } of active) {
-      sections.push(formatEntry(entry, leadParagraph(entry.content)));
-    }
-    sections.push('');
-  }
-
-  if (speculative.length > 0) {
-    sections.push('## Under Consideration\n');
-    for (const { entry } of speculative) {
-      sections.push(formatEntry(entry, leadParagraph(entry.content)));
-    }
-    sections.push('');
-  }
-
-  if (informational.length > 0) {
-    sections.push('## Other Entries\n');
-    for (const { entry } of informational) {
-      sections.push(formatEntry(entry, leadParagraph(entry.content)));
-    }
-    sections.push('');
-  }
-
-  // If no entries at all, note that
-  if (entries.length === 0) {
+  } else {
     sections.push('\n*No entries yet. Save something to record your first entry.*');
   }
 
