@@ -21,7 +21,7 @@ export function browse(input: BrowseInput, userId: string): string {
     }
     const lines = projects.map(p => {
       const summary = p.summary ? ` — ${p.summary}` : '';
-      return `- **${p.project_id}** (${p.name})${summary}\n  ${p.entry_count} entries · last activity: ${p.last_activity}`;
+      return `- **${p.project_id}**${summary}\n  ${p.entry_count} entries · last activity: ${p.last_activity}`;
     });
     return lines.join('\n\n');
   }

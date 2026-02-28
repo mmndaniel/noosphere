@@ -11,10 +11,19 @@ export interface ListAppendDelta {
   add: string;
 }
 
-export type StateDelta = KeyValueDelta | ListAppendDelta;
+export interface RemoveDelta {
+  section: string;
+  remove: string;
+}
+
+export type StateDelta = KeyValueDelta | ListAppendDelta | RemoveDelta;
 
 function isListAppend(delta: StateDelta): delta is ListAppendDelta {
   return 'add' in delta;
+}
+
+function isRemove(delta: StateDelta): delta is RemoveDelta {
+  return 'remove' in delta;
 }
 
 function rand4(): string {
@@ -39,9 +48,16 @@ export function applyStateDeltas(projectId: string, userId: string, deltas: Stat
     VALUES (?, ?, ?, ?, ?, 1, ?)
   `);
 
+  const removeField = db.prepare(`
+    DELETE FROM project_state_fields
+    WHERE project_id = ? AND user_id = ? AND section = ? AND value = ?
+  `);
+
   const applyAll = db.transaction(() => {
     for (const delta of deltas) {
-      if (isListAppend(delta)) {
+      if (isRemove(delta)) {
+        removeField.run(projectId, userId, delta.section, delta.remove);
+      } else if (isListAppend(delta)) {
         const key = `${now}_${rand4()}`;
         insertListItem.run(projectId, userId, delta.section, key, delta.add, now);
       } else {
@@ -74,8 +90,8 @@ export function reconstructState(projectId: string, userId: string): string {
   const db = getDb();
 
   const project = db.prepare(
-    'SELECT project_id, name, created_at FROM projects WHERE project_id = ? AND user_id = ?'
-  ).get(projectId, userId) as { project_id: string; name: string; created_at: string } | undefined;
+    'SELECT project_id, created_at FROM projects WHERE project_id = ? AND user_id = ?'
+  ).get(projectId, userId) as { project_id: string; created_at: string } | undefined;
 
   if (!project) return '';
 
@@ -100,7 +116,6 @@ export function reconstructState(projectId: string, userId: string): string {
 
   lines.push('---');
   lines.push(`project_id: ${project.project_id}`);
-  lines.push(`name: ${project.name}`);
   lines.push(`updated: ${lastUpdated}`);
   lines.push('---');
   lines.push('');
@@ -144,7 +159,6 @@ export function reconstructState(projectId: string, userId: string): string {
 
 export interface ProjectSummary {
   project_id: string;
-  name: string;
   summary: string;
   last_activity: string;
   entry_count: number;
@@ -156,7 +170,6 @@ export function listAllProjects(userId: string): ProjectSummary[] {
   const rows = db.prepare(`
     SELECT
       p.project_id,
-      p.name,
       p.created_at,
       COUNT(e.entry_id) AS entry_count,
       MAX(e.timestamp) AS last_activity
@@ -167,14 +180,12 @@ export function listAllProjects(userId: string): ProjectSummary[] {
     ORDER BY COALESCE(MAX(e.timestamp), p.created_at) DESC
   `).all(userId) as {
     project_id: string;
-    name: string;
     created_at: string;
     entry_count: number;
     last_activity: string | null;
   }[];
 
   return rows.map(row => {
-    // Get Summary field if it exists
     const summaryField = db.prepare(`
       SELECT value FROM project_state_fields
       WHERE project_id = ? AND user_id = ? AND section = 'Summary'
@@ -183,7 +194,6 @@ export function listAllProjects(userId: string): ProjectSummary[] {
 
     return {
       project_id: row.project_id,
-      name: row.name,
       summary: summaryField?.value ?? '',
       last_activity: row.last_activity ?? row.created_at,
       entry_count: row.entry_count,
@@ -191,11 +201,11 @@ export function listAllProjects(userId: string): ProjectSummary[] {
   });
 }
 
-export function ensureProject(projectId: string, name: string, userId: string): void {
+export function ensureProject(projectId: string, userId: string): void {
   const db = getDb();
   db.prepare(`
-    INSERT INTO projects (project_id, name, user_id)
-    VALUES (?, ?, ?)
+    INSERT INTO projects (project_id, user_id)
+    VALUES (?, ?)
     ON CONFLICT(project_id, user_id) DO NOTHING
-  `).run(projectId, name, userId);
+  `).run(projectId, userId);
 }

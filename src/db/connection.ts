@@ -23,7 +23,6 @@ function initSchema(db: Database.Database): void {
     CREATE TABLE IF NOT EXISTS projects (
       project_id TEXT NOT NULL,
       user_id    TEXT NOT NULL DEFAULT 'local',
-      name       TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
       PRIMARY KEY (project_id, user_id)
     );
@@ -47,36 +46,34 @@ function initSchema(db: Database.Database): void {
       project_id  TEXT NOT NULL,
       user_id     TEXT NOT NULL DEFAULT 'local',
       title       TEXT NOT NULL,
-      source_tool TEXT NOT NULL DEFAULT 'unknown',
       timestamp   TEXT NOT NULL,
-      tags        TEXT NOT NULL DEFAULT '[]',
-      type        TEXT NOT NULL DEFAULT 'session',
       content     TEXT NOT NULL
     );
 
     -- FTS5 content table (linked to entries via rowid)
     CREATE VIRTUAL TABLE IF NOT EXISTS entries_fts USING fts5(
-      title, content, tags,
+      title, content,
       content=entries,
-      content_rowid=rowid
+      content_rowid=rowid,
+      tokenize='porter unicode61'
     );
 
     -- Keep FTS5 in sync
     CREATE TRIGGER IF NOT EXISTS entries_ai AFTER INSERT ON entries BEGIN
-      INSERT INTO entries_fts(rowid, title, content, tags)
-        VALUES (new.rowid, new.title, new.content, new.tags);
+      INSERT INTO entries_fts(rowid, title, content)
+        VALUES (new.rowid, new.title, new.content);
     END;
 
     CREATE TRIGGER IF NOT EXISTS entries_ad AFTER DELETE ON entries BEGIN
-      INSERT INTO entries_fts(entries_fts, rowid, title, content, tags)
-        VALUES ('delete', old.rowid, old.title, old.content, old.tags);
+      INSERT INTO entries_fts(entries_fts, rowid, title, content)
+        VALUES ('delete', old.rowid, old.title, old.content);
     END;
 
     CREATE TRIGGER IF NOT EXISTS entries_au AFTER UPDATE ON entries BEGIN
-      INSERT INTO entries_fts(entries_fts, rowid, title, content, tags)
-        VALUES ('delete', old.rowid, old.title, old.content, old.tags);
-      INSERT INTO entries_fts(rowid, title, content, tags)
-        VALUES (new.rowid, new.title, new.content, new.tags);
+      INSERT INTO entries_fts(entries_fts, rowid, title, content)
+        VALUES ('delete', old.rowid, old.title, old.content);
+      INSERT INTO entries_fts(rowid, title, content)
+        VALUES (new.rowid, new.title, new.content);
     END;
 
     CREATE TABLE IF NOT EXISTS users (
@@ -107,16 +104,17 @@ function initSchema(db: Database.Database): void {
 }
 
 function migrateSchema(db: Database.Database): void {
-  // Check if the full migration (FK removal + compound PKs) is complete.
-  // The definitive check: entries table DDL should NOT contain a FOREIGN KEY clause.
+  const entryCols = db.pragma('table_info(entries)') as { name: string }[];
+  const entriesHasSourceTool = entryCols.some(c => c.name === 'source_tool');
+  const entriesHasUserId = entryCols.some(c => c.name === 'user_id');
+
   const entriesDdl = (db.prepare(
     "SELECT sql FROM sqlite_master WHERE type='table' AND name='entries'"
   ).get() as { sql: string } | undefined)?.sql ?? '';
   const entriesHasFk = entriesDdl.includes('FOREIGN KEY');
-  const entryCols = db.pragma('table_info(entries)') as { name: string }[];
-  const entriesHasUserId = entryCols.some(c => c.name === 'user_id');
 
-  if (entriesHasUserId && !entriesHasFk) return; // fully migrated
+  // Nothing to migrate if entries has user_id, no FK, and no source_tool
+  if (entriesHasUserId && !entriesHasFk && !entriesHasSourceTool) return;
 
   // Ensure projects has user_id column (from prior migration)
   const projCols = db.pragma('table_info(projects)') as { name: string }[];
@@ -128,17 +126,16 @@ function migrateSchema(db: Database.Database): void {
   db.pragma('foreign_keys = OFF');
 
   const migrate = db.transaction(() => {
-    // 1. Recreate projects with compound PK (project_id, user_id)
+    // 1. Recreate projects without name column, compound PK
     db.exec(`
       CREATE TABLE projects_new (
         project_id TEXT NOT NULL,
         user_id    TEXT NOT NULL DEFAULT 'local',
-        name       TEXT NOT NULL,
         created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
         PRIMARY KEY (project_id, user_id)
       );
-      INSERT INTO projects_new (project_id, user_id, name, created_at)
-        SELECT project_id, COALESCE(user_id, 'local'), name, created_at FROM projects;
+      INSERT INTO projects_new (project_id, user_id, created_at)
+        SELECT project_id, COALESCE(user_id, 'local'), created_at FROM projects;
       DROP TABLE projects;
       ALTER TABLE projects_new RENAME TO projects;
     `);
@@ -159,7 +156,6 @@ function migrateSchema(db: Database.Database): void {
         PRIMARY KEY (project_id, user_id, section, key)
       );
     `);
-    // Use existing user_id if column exists, otherwise backfill from projects
     db.exec(psfHasUserId
       ? `INSERT INTO project_state_fields_new (project_id, user_id, section, key, value, is_list_item, updated_at)
            SELECT project_id, user_id, section, key, value, is_list_item, updated_at
@@ -167,15 +163,14 @@ function migrateSchema(db: Database.Database): void {
       : `INSERT INTO project_state_fields_new (project_id, user_id, section, key, value, is_list_item, updated_at)
            SELECT psf.project_id, COALESCE(p.user_id, 'local'), psf.section, psf.key, psf.value, psf.is_list_item, psf.updated_at
            FROM project_state_fields psf
-           LEFT JOIN projects p ON p.project_id = psf.project_id`
+           LEFT JOIN projects_new p ON p.project_id = psf.project_id`
     );
     db.exec(`
       DROP TABLE project_state_fields;
       ALTER TABLE project_state_fields_new RENAME TO project_state_fields;
     `);
 
-    // 3. Recreate entries without FK constraint, adding user_id
-    //    Must also rebuild FTS table and triggers since they reference entries.
+    // 3. Recreate entries without source_tool, tags, type; add user_id
     db.exec(`
       DROP TRIGGER IF EXISTS entries_ai;
       DROP TRIGGER IF EXISTS entries_ad;
@@ -187,48 +182,45 @@ function migrateSchema(db: Database.Database): void {
         project_id  TEXT NOT NULL,
         user_id     TEXT NOT NULL DEFAULT 'local',
         title       TEXT NOT NULL,
-        source_tool TEXT NOT NULL DEFAULT 'unknown',
         timestamp   TEXT NOT NULL,
-        tags        TEXT NOT NULL DEFAULT '[]',
-        type        TEXT NOT NULL DEFAULT 'session',
         content     TEXT NOT NULL
       );
     `);
-    // Use existing user_id if column exists, otherwise backfill from projects
     db.exec(entriesHasUserId
-      ? `INSERT INTO entries_new (entry_id, project_id, user_id, title, source_tool, timestamp, tags, type, content)
-           SELECT entry_id, project_id, user_id, title, source_tool, timestamp, tags, type, content
+      ? `INSERT INTO entries_new (entry_id, project_id, user_id, title, timestamp, content)
+           SELECT entry_id, project_id, user_id, title, timestamp, content
            FROM entries`
-      : `INSERT INTO entries_new (entry_id, project_id, user_id, title, source_tool, timestamp, tags, type, content)
-           SELECT e.entry_id, e.project_id, COALESCE(p.user_id, 'local'), e.title, e.source_tool, e.timestamp, e.tags, e.type, e.content
+      : `INSERT INTO entries_new (entry_id, project_id, user_id, title, timestamp, content)
+           SELECT e.entry_id, e.project_id, COALESCE(p.user_id, 'local'), e.title, e.timestamp, e.content
            FROM entries e
-           LEFT JOIN projects p ON p.project_id = e.project_id`
+           LEFT JOIN projects_new p ON p.project_id = e.project_id`
     );
     db.exec(`
       DROP TABLE entries;
       ALTER TABLE entries_new RENAME TO entries;
 
       CREATE VIRTUAL TABLE entries_fts USING fts5(
-        title, content, tags,
+        title, content,
         content=entries,
-        content_rowid=rowid
+        content_rowid=rowid,
+        tokenize='porter unicode61'
       );
-      INSERT INTO entries_fts(rowid, title, content, tags)
-        SELECT rowid, title, content, tags FROM entries;
+      INSERT INTO entries_fts(rowid, title, content)
+        SELECT rowid, title, content FROM entries;
 
       CREATE TRIGGER entries_ai AFTER INSERT ON entries BEGIN
-        INSERT INTO entries_fts(rowid, title, content, tags)
-          VALUES (new.rowid, new.title, new.content, new.tags);
+        INSERT INTO entries_fts(rowid, title, content)
+          VALUES (new.rowid, new.title, new.content);
       END;
       CREATE TRIGGER entries_ad AFTER DELETE ON entries BEGIN
-        INSERT INTO entries_fts(entries_fts, rowid, title, content, tags)
-          VALUES ('delete', old.rowid, old.title, old.content, old.tags);
+        INSERT INTO entries_fts(entries_fts, rowid, title, content)
+          VALUES ('delete', old.rowid, old.title, old.content);
       END;
       CREATE TRIGGER entries_au AFTER UPDATE ON entries BEGIN
-        INSERT INTO entries_fts(entries_fts, rowid, title, content, tags)
-          VALUES ('delete', old.rowid, old.title, old.content, old.tags);
-        INSERT INTO entries_fts(rowid, title, content, tags)
-          VALUES (new.rowid, new.title, new.content, new.tags);
+        INSERT INTO entries_fts(entries_fts, rowid, title, content)
+          VALUES ('delete', old.rowid, old.title, old.content);
+        INSERT INTO entries_fts(rowid, title, content)
+          VALUES (new.rowid, new.title, new.content);
       END;
     `);
 

@@ -13,26 +13,24 @@ const ListAppendDeltaSchema = z.object({
   add: z.string(),
 });
 
-const StateDeltaSchema = z.union([KeyValueDeltaSchema, ListAppendDeltaSchema]);
+const RemoveDeltaSchema = z.object({
+  section: z.string(),
+  remove: z.string(),
+});
+
+const StateDeltaSchema = z.union([KeyValueDeltaSchema, ListAppendDeltaSchema, RemoveDeltaSchema]);
 
 export const SaveInputSchema = z.object({
   project_id: z.string(),
-  // Entry fields (all optional — can save state only)
   title: z.string().optional(),
-  type: z.enum(['session', 'foundational']).optional(),
-  source_tool: z.string().optional(),
-  tags: z.array(z.string()).optional(),
   sections: z.record(z.string(), z.string()).optional(),
-  // State update (optional — can save entry only)
   state_deltas: z.array(StateDeltaSchema).optional(),
 });
 
 export type SaveInput = z.infer<typeof SaveInputSchema>;
 
 export function save(input: SaveInput, userId: string): object {
-  // Derive project name: last segment of the project_id or the full string
-  const name = input.project_id.split('/').pop() ?? input.project_id;
-  ensureProject(input.project_id, name, userId);
+  ensureProject(input.project_id, userId);
 
   const result: Record<string, string> = {};
 
@@ -42,9 +40,6 @@ export function save(input: SaveInput, userId: string): object {
       project_id: input.project_id,
       user_id: userId,
       title: input.title,
-      source_tool: input.source_tool,
-      tags: input.tags,
-      type: input.type,
       sections: input.sections,
     });
     result.entry_id = entry_id;

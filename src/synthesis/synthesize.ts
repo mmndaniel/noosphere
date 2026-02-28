@@ -11,7 +11,7 @@ function leadParagraph(content: string): string {
 function formatEntry(e: Entry): string {
   const d = new Date(e.timestamp);
   const ts = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  return `- **${e.title}** (*${ts}*) — ${leadParagraph(e.content)}`;
+  return `- **${e.title}** (*${ts}*, ${e.entry_id}) — ${leadParagraph(e.content)}`;
 }
 
 export function synthesizeBrowse(stateMarkdown: string, entries: Entry[]): string {

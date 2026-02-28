@@ -4,10 +4,7 @@ export interface Entry {
   entry_id: string;
   project_id: string;
   title: string;
-  source_tool: string;
   timestamp: string;
-  tags: string[];
-  type: string;
   content: string;
 }
 
@@ -16,7 +13,6 @@ export interface SearchResult {
   title: string;
   snippet: string;
   timestamp: string;
-  tags: string[];
 }
 
 function generateEntryId(): string {
@@ -31,29 +27,22 @@ export function createEntry(params: {
   project_id: string;
   user_id: string;
   title: string;
-  source_tool?: string;
-  tags?: string[];
-  type?: string;
   sections: Record<string, string>;
 }): string {
   const db = getDb();
   const entry_id = generateEntryId();
   const timestamp = new Date().toISOString();
-  const tags = JSON.stringify(params.tags ?? []);
   const content = sectionsToMarkdown(params.sections);
 
   db.prepare(`
-    INSERT INTO entries (entry_id, project_id, user_id, title, source_tool, timestamp, tags, type, content)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO entries (entry_id, project_id, user_id, title, timestamp, content)
+    VALUES (?, ?, ?, ?, ?, ?)
   `).run(
     entry_id,
     params.project_id,
     params.user_id,
     params.title,
-    params.source_tool ?? 'unknown',
     timestamp,
-    tags,
-    params.type ?? 'session',
     content,
   );
 
@@ -65,21 +54,16 @@ export function getEntry(entryId: string, userId: string): Entry | null {
   const row = db.prepare(`
     SELECT * FROM entries
     WHERE entry_id = ? AND user_id = ?
-  `).get(entryId, userId) as (Omit<Entry, 'tags'> & { tags: string }) | undefined;
+  `).get(entryId, userId) as Entry | undefined;
 
-  if (!row) return null;
-  return { ...row, tags: JSON.parse(row.tags) };
+  return row ?? null;
 }
 
 export function entryToMarkdown(entry: Entry): string {
   const lines: string[] = [];
   lines.push('---');
-  lines.push(`entry_id: ${entry.entry_id}`);
-  lines.push(`project_id: ${entry.project_id}`);
   lines.push(`title: ${entry.title}`);
   lines.push(`timestamp: ${entry.timestamp}`);
-  lines.push(`tags: [${entry.tags.join(', ')}]`);
-  lines.push(`type: ${entry.type}`);
   lines.push('---');
   lines.push('');
   lines.push(entry.content);
@@ -104,14 +88,12 @@ function sectionsToMarkdown(sections: Record<string, string>): string {
 export function getRecentEntries(projectId: string, limit: number, userId: string): Entry[] {
   const db = getDb();
 
-  const rows = db.prepare(`
+  return db.prepare(`
     SELECT * FROM entries
     WHERE project_id = ? AND user_id = ?
-    ORDER BY CASE WHEN type = 'foundational' THEN 0 ELSE 1 END ASC, timestamp DESC
+    ORDER BY timestamp DESC
     LIMIT ?
-  `).all(projectId, userId, limit) as (Omit<Entry, 'tags'> & { tags: string })[];
-
-  return rows.map(row => ({ ...row, tags: JSON.parse(row.tags) }));
+  `).all(projectId, userId, limit) as Entry[];
 }
 
 export function getEntryCount(projectId: string, userId: string): number {
@@ -130,13 +112,12 @@ export function searchEntries(projectId: string, keywords: string[], userId: str
   // Build FTS5 query: "auth" OR "jwt" OR "login"
   const ftsQuery = keywords.map(k => `"${k.replace(/"/g, '')}"`).join(' OR ');
 
-  const rows = db.prepare(`
+  return db.prepare(`
     SELECT
       e.entry_id,
       e.title,
       snippet(entries_fts, 1, '[', ']', '...', 32) AS snippet,
-      e.timestamp,
-      e.tags
+      e.timestamp
     FROM entries_fts
     JOIN entries e ON e.rowid = entries_fts.rowid
     WHERE entries_fts MATCH ?
@@ -144,19 +125,5 @@ export function searchEntries(projectId: string, keywords: string[], userId: str
       AND e.user_id = ?
     ORDER BY rank
     LIMIT 20
-  `).all(ftsQuery, projectId, userId) as {
-    entry_id: string;
-    title: string;
-    snippet: string;
-    timestamp: string;
-    tags: string;
-  }[];
-
-  return rows.map(row => ({
-    entry_id: row.entry_id,
-    title: row.title,
-    snippet: row.snippet,
-    timestamp: row.timestamp,
-    tags: JSON.parse(row.tags),
-  }));
+  `).all(ftsQuery, projectId, userId) as SearchResult[];
 }
