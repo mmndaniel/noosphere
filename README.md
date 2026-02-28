@@ -41,7 +41,9 @@ Customize → Integrations → Add → paste the URL above.
 
 ### [ChatGPT](https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt-beta)
 
-Settings → Apps → Create → paste the URL above. Requires Pro, Team, or Enterprise with Developer Mode enabled.
+Settings → Apps → Create → paste the URL above. Requires Pro, Team, or Enterprise with Developer Mode enabled. In the **description** field, paste:
+
+> Persistent memory across conversations. Browse at the start to pick up where you left off. Save when a decision is made or the session ends. Use automatically — the user doesn't need to ask.
 
 ### [Claude Code](https://code.claude.com/docs/en/mcp)
 
