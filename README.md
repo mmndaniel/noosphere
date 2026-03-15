@@ -110,6 +110,10 @@ For git projects, the AI typically picks up the project name from the remote URL
 
 ---
 
+## Works with Proto
+
+Once your brainstorm becomes a decision, use [Proto](https://github.com/mmndaniel/proto) to turn it into a working prototype. Proto structures your project into a spec, plan, and tracked tasks. Subagents implement in parallel while you steer. Noosphere carries the context. Proto builds from it.
+
 ## Self-hosting
 
 You can run your own instance instead of using `usenoosphere.ai`:
